@@ -7,7 +7,8 @@
     <value nick="large" value="5" />
     <value nick="x-large" value="6" />
   </enum>
-  <schema id="org.gnome.shell.extensions.lunar-calendar" path="/org/gnome/shell/extensions/lunar-calendar/">
+  <schema id="org.gnome.shell.extensions.lunar-calendar"
+    path="/org/gnome/shell/extensions/lunar-calendar/">
     <key name="show-time" type="b">
       <default>true</default>
     </key>
@@ -34,6 +35,9 @@
     </key>
     <key name="yuyan" type="i">
       <default>3</default>
+    </key>
+    <key name="jrrilinei" type="b">
+      <default>false</default>
     </key>
   </schema>
 </schemalist>

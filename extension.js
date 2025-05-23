@@ -7,6 +7,7 @@ import Gettext from 'gettext';
 
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as MessageList from 'resource:///org/gnome/shell/ui/messageList.js';
+import * as MessageTray from 'resource:///org/gnome/shell/ui/messageTray.js';
 import { EventSourceBase } from 'resource:///org/gnome/shell/ui/calendar.js';
 
 import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
@@ -25,126 +26,235 @@ const _make_new_with_args = (my_class, args) =>
     ))();
 
 const LunarCalendarMessage = GObject.registerClass(
-    {
-        Signals: {
-            close: {}
-        }
-    },
     class LunarCalendarMessage extends St.Button {
-        constructor(title, body) {
+        constructor(rlt, rl, bzt, bz, gzt, gz, jrt, jr) {
             super({
-                style_class: 'events-button',
+                style_class: 'message lunar-message',
                 can_focus: true,
                 x_expand: true,
                 y_expand: false
             });
 
             const contentBox = new St.BoxLayout({
-                style_class: 'events-box',
+                style_class: 'lunar-message-group message-notification-group',
                 vertical: true,
                 x_expand: true
             });
 
-            const titleLabel = new St.Label({
-                style_class: 'events-title',
-                y_align: Clutter.ActorAlign.END,
-                text: title
-            });
-            contentBox.add_child(titleLabel);
+            const _titleLabel = (text) =>
+                new St.Label({
+                    style_class: 'message-source-title',
+                    y_align: Clutter.ActorAlign.END,
+                    text
+                });
 
-            const bodyLabel = new St.Label({
-                style_class: 'events-list',
-                text: body
-            });
-            contentBox.add_child(bodyLabel);
+            const _contentLabel = (text) =>
+                new St.Label({
+                    style_class: 'message-content',
+                    text
+                });
+
+            const _header = (child) =>
+                new St.Bin({
+                    style_class: 'message-header',
+                    child: new St.Bin({
+                        style_class: 'message-header-content',
+                        child
+                    }),
+                    x_align: Clutter.ActorAlign.START
+                });
+
+            const _box = (child) =>
+                new St.Bin({
+                    style_class: 'message-box',
+                    child,
+                    x_align: Clutter.ActorAlign.START
+                });
+
+            const _group = (title, content) => {
+                const box = new St.BoxLayout({
+                    vertical: true,
+                    x_expand: true
+                });
+                box.add_child(_header(title));
+                box.add_child(_box(content));
+                return box;
+            };
+
+            this._rltLabel = _titleLabel(rlt);
+            this._rlLabel = _contentLabel(rl);
+            this._rlGroup = _group(this._rltLabel, this._rlLabel);
+            contentBox.add_child(this._rlGroup);
+
+            this._bztLabel = _titleLabel(bzt);
+            this._bzLabel = _contentLabel(bz);
+            this._bzGroup = _group(this._bztLabel, this._bzLabel);
+            contentBox.add_child(this._bzGroup);
+
+            this._gztLabel = _titleLabel(gzt);
+            this._gzLabel = _contentLabel(gz);
+            this._gzGroup = _group(this._gztLabel, this._gzLabel);
+            contentBox.add_child(this._gzGroup);
+
+            this._jrtLabel = _titleLabel(jrt);
+            this._jrLabel = _contentLabel(jr);
+            this._jrGroup = _group(this._jrtLabel, this._jrLabel);
+            contentBox.add_child(this._jrGroup);
+
+            this.bzVisible = true;
+            this.gzVisible = true;
+            this.jrVisible = true;
 
             this.set_child(contentBox);
         }
 
-        canClear() {
-            return false;
+        set rl(rlt) {
+            this._rlLabel.text = rlt;
         }
 
-        canClose() {
-            return false;
+        set bz(bzt) {
+            this._bzLabel.text = bzt;
+        }
+
+        set gz(gzt) {
+            this._gzLabel.text = gzt;
+        }
+
+        set jr(jrt) {
+            this._jrLabel.text = jrt;
+        }
+
+        bzHide() {
+            this.bzVisible = false;
+            this._bzGroup.hide();
+        }
+
+        gzHide() {
+            this.gzVisible = false;
+            this._gzGroup.hide();
+        }
+
+        jrHide() {
+            this.jrVisible = false;
+            this._jrGroup.hide();
+        }
+
+        bzShow() {
+            this.bzVisible = true;
+            this._bzGroup.show();
+        }
+
+        gzShow() {
+            this.gzVisible = true;
+            this._gzGroup.show();
+        }
+
+        jrShow() {
+            this.jrVisible = true;
+            this._jrGroup.show();
         }
     }
 );
 
 const LunarCalendarSection = GObject.registerClass(
-    class LunarCalendarSection extends MessageList.MessageListSection {
-        _init(settings, ld) {
-            super._init('Lunar Calendar');
+    class LunarCalendarSection extends St.Bin {
+        constructor(settings, ld) {
+            super({
+                style_class: 'message-view'
+            });
 
             this._settings = settings;
             this._ld = ld;
 
-            this._title = new St.Button({
-                style_class: 'events-section-title',
-                label: '',
-                x_align: Clutter.ActorAlign.START,
-                can_focus: true
-            });
-            this.insert_child_below(this._title, null);
+            this._message = new LunarCalendarMessage(
+                this._tl('农历'),
+                this._ld.strftimex('%(NIAN)年%(YUE)月%(RI)日'),
+                this._tl('八字'),
+                this._ld.strftime('%(Y8)年%(M8)月%(D8)日'),
+                this._tl('干支'),
+                this._ld.strftime('%(Y60)年%(M60)月%(D60)日'),
+                this._tl('节日'),
+                this._ld.get_jieri('\n')
+            );
+            this._currentLang = this._ld._lang;
+
+            this.set_child(this._message);
+
+            if (!this._settings.get_boolean('ba-zi') || LunarDate.backend != 'ytliu0')
+                this._message.bzHide();
+            if (!this._settings.get_boolean('gen-zhi')) this._message.gzHide();
+            const jr = this._settings.get_boolean('jieri') ? this._ld.getHoliday() : '';
+            if (jr == '') this._message.jrHide();
+        }
+
+        updateTl() {
+            if (this._currentLang !== this._ld._lang) {
+                this._currentLang = this._ld._lang;
+                this._message._rltLabel.text = this._tl('农历');
+                this._message._bztLabel.text = this._tl('八字');
+                this._message._gztLabel.text = this._tl('干支');
+                this._message._jrtLabel.text = this._tl('节日');
+            }
         }
 
         _tl(str) {
             return tl(this._ld._lang, str);
         }
 
-        get allowed() {
-            return true;
-        }
-
-        _reloadEvents() {
+        _reload() {
             this._reloading = true;
 
-            this._list.destroy_all_children();
+            const bzv = this._message.bzVisible;
+            const gzv = this._message.gzVisible;
+            const jrv = this._message.jrVisible;
 
-            if (this._settings.get_boolean('ba-zi') && LunarDate.backend != 'ytliu0')
-                this.addMessage(
-                    new LunarCalendarMessage(
-                        this._tl('八字'),
-                        this._ld.strftime('%(Y8)年%(M8)月%(D8)日')
-                    ),
-                    false
-                );
+            this._message.rl = this._ld.strftimex('%(NIAN)年%(YUE)月%(RI)日');
 
-            if (this._settings.get_boolean('gen-zhi'))
-                this.addMessage(
-                    new LunarCalendarMessage(
-                        this._tl('干支'),
-                        this._ld.strftime('%(Y60)年%(M60)月%(D60)日')
-                    ),
-                    false
-                );
+            if (this._settings.get_boolean('ba-zi') && LunarDate.backend != 'ytliu0') {
+                this._message.bz = this._ld.strftime('%(Y8)年%(M8)月%(D8)日');
+                if (!bzv) {
+                    this._message.bzShow();
+                }
+            } else if (bzv) {
+                this._message.bzHide();
+            }
+
+            if (this._settings.get_boolean('gen-zhi')) {
+                this._message.gz = this._ld.strftime('%(Y60)年%(M60)月%(D60)日');
+                if (!gzv) {
+                    this._message.gzShow();
+                }
+            } else if (gzv) {
+                this._message.gzHide();
+            }
 
             const jr = this._settings.get_boolean('jieri') ? this._ld.getHoliday() : '';
-            if (jr != '')
-                this.addMessage(
-                    new LunarCalendarMessage(this._tl('节日'), this._ld.get_jieri('\n')),
-                    false
-                );
+            if (jr != '') {
+                const jrs = this._ld.get_jieri('\n').split('\n');
+                const jrs2 =
+                    this._settings.get_boolean('jrrilinei') &&
+                    this._settings.get_boolean('show-calendar')
+                        ? jrs.splice(1)
+                        : jrs;
+                if (jrs2.length) {
+                    this._message.jr = jrs2.join('\n');
+                    if (!jrv) {
+                        this._message.jrShow();
+                    }
+                } else if (jrv) {
+                    this._message.jrHide();
+                }
+            } else if (jrv) {
+                this._message.jrHide();
+            }
 
             this._reloading = false;
-            this._sync();
         }
 
         setDate(date) {
             this._ld.setDateNoon(date);
             let cny = this._ld.strftime('%(shengxiao)');
-            this._title.label = this._ld.strftimex('%(NIAN)年%(YUE)月%(RI)日');
-            this._reloadEvents();
-        }
-
-        _shouldShow() {
-            return true;
-        }
-
-        _sync() {
-            if (this._reloading) return;
-
-            super._sync();
+            this._reload();
         }
     }
 );
@@ -419,10 +529,8 @@ export default class LunarCalendarExtension extends Extension {
         };
 
         ml._lunarCalendarSection = new LunarCalendarSection(this._settings, this._ld);
-        ml._addSection(ml._lunarCalendarSection);
-        ml._sectionList.set_child_at_index(ml._lunarCalendarSection, 3);
-        ml._lunarCalendarSection._sync();
-        ml._sync();
+        const mlBox = ml._scrollView.get_parent();
+        mlBox.insert_child_at_index(ml._lunarCalendarSection, 0);
 
         const updateDate = () => {
             self._ld.setDate(new Date());

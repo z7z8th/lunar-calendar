@@ -1,16 +1,18 @@
 {
   "creator": "Nei",
-  "description": "Display Chinese Lunar Calendar in panel",
+  "description": "Display Chinese Lunar Calendar in panel.\n* On debian,you can run `apt install gir1.2-lunardate-3.0` to use lunar-date as backend.\n* On fedora, an internal js lunar lib is used.",
   "donations": {
     "kofi": "ailin"
   },
-  "gettext-domain": "lunarcal@ailin.nemui",
+  "gettext-domain": "lunar-calendar@z7z8th",
   "name": "Lunar Calendar 农历",
   "settings-schema": "org.gnome.shell.extensions.lunar-calendar",
   "shell-version": [
-    "46"
+    "46",
+    "47",
+    "48"
   ],
-  "url": "https://github.com/z7z8th/lunar-calendar/issues",
-  "uuid": "lunarcal@ailin.nemui",
-  "version": 100
+  "url": "https://github.com/z7z8th/lunar-calendar",
+  "uuid": "lunar-calendar@z7z8th",
+  "version": 52
 }

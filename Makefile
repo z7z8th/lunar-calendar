@@ -1,5 +1,5 @@
 NAME = "Lunar Calendar 农历"
-UUID = lunarcal@ailin.nemui
+UUID = "lunar-calendar@z7z8th"
 ZIP = $(UUID).shell-extension.zip
 
 default pack: msgfmt
@@ -14,6 +14,7 @@ copy: msgfmt
 
 install:
 	gnome-extensions install --force $(ZIP)
+	ls -la ~/.local/share/gnome-shell/extensions/$(UUID)
 
 uninstall:
 	gnome-extensions uninstall $(UUID) || \
@@ -47,7 +48,7 @@ gjs:
 	set -e; \
 	oldir=$$HOME/.local/share/gnome-shell/gnome-shell-overlay; \
 	mkdir -p $$oldir; \
-	for lib in /usr/lib/x86_64-linux-gnu/libgjs.so.0 /usr/lib/gnome-shell/libshell-14.so; do \
+	for lib in /usr/lib/x86_64-linux-gnu/libgjs.so.0 /usr/lib/gnome-shell/libshell-*.so; do \
 		for f in $$(gresource list $$lib); do \
 			mkdir -p $$(dirname $$oldir/$${f#/org/gnome/}); \
 			gresource extract $$lib $$f > $$oldir/$${f#/org/gnome/}; \

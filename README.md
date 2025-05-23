@@ -22,3 +22,15 @@ make && make install
 ## Screenshot
 
 ![lunar lang](./img/lunar-lang.png)
+
+Compat with GNOME 46, source code originally from gnome-shell-extension uuid [lunarcal@ailin.nemui](https://extensions.gnome.org/extension/675/lunar-calendar/)
+
+## Maintain
+
+Everytime Gnome major version updates, extensions break, and extension authors are too busy to fix them.
+I'm trying to maintain some gnome extensions myself.
+
+
+## Install method
+
+`make -j1 pack install`

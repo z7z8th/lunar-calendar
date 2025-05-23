@@ -13,9 +13,7 @@ export default class LunarCalendarPreferences extends ExtensionPreferences {
         const ui = Gtk.Builder.new_from_file(this.dir.get_path() + '/prefs.ui');
         win.add(ui.get_object('content-table'));
         const hasBazi = LunarDate.backend != 'ytliu0';
-        // const hasLang = LunarDate.backend == 'ytliu0';
-        const hasLang = true;
-        console.log('hasBazi', hasBazi, 'hasLang', hasLang);
+        console.log('hasBazi', hasBazi);
 
         // Make sure the win doesn't outlive the settings object
         win._settings = this.getSettings();
@@ -38,13 +36,14 @@ export default class LunarCalendarPreferences extends ExtensionPreferences {
             'active',
             Gio.SettingsBindFlags.DEFAULT
         );
-        if (hasBazi)
+        if (hasBazi) {
             win._settings.bind(
                 'ba-zi',
                 ui.get_object('ba-zi'),
                 'active',
                 Gio.SettingsBindFlags.DEFAULT
             );
+        }
         win._settings.bind(
             'gen-zhi',
             ui.get_object('gen-zhi'),
@@ -57,24 +56,12 @@ export default class LunarCalendarPreferences extends ExtensionPreferences {
             'active',
             Gio.SettingsBindFlags.DEFAULT
         );
-        if (hasLang)
-            win._settings.bind(
-                'yuyan',
-                ui.get_object('yuyan'),
-                'selected',
-                Gio.SettingsBindFlags.DEFAULT
-            );
-        else {
-            const m = ui.get_object('yuyan').model;
-            const l =
-                LunarDate.lang === 1
-                    ? '繁體字'
-                    : LunarDate.lang === 2
-                    ? '简体字'
-                    : 'Pīnyīn';
-            m.splice(0, m.get_n_items(), [l]);
-            ui.get_object('yuyan').title = _('系统语言');
-        }
+        win._settings.bind(
+            'yuyan',
+            ui.get_object('yuyan'),
+            'selected',
+            Gio.SettingsBindFlags.DEFAULT
+        );
 
         // using <span> on the calendar day buttons does not work anymore :-(
 
@@ -108,7 +95,7 @@ export default class LunarCalendarPreferences extends ExtensionPreferences {
 
         ui.get_object('ba-zi').sensitive = hasBazi;
 
-        ui.get_object('yuyan').sensitive = hasLang;
+        ui.get_object('yuyan').sensitive = true;
 
         let sl = ui.get_object('yuyan').model;
         ui.get_object('cxk').label = `github.com/${LunarDate.backend}`;

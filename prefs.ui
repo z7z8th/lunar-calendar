@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<interface domain="lunarcal@ailin.nemui">
-  <requires lib="gtk" version="4.0"/>
-  <requires lib="libadwaita" version="1.4"/>
+<interface domain="lunar-calendar@z7z8th">
+  <requires lib="gtk" version="4.0" />
+  <requires lib="libadwaita" version="1.4" />
   <object class="AdwPreferencesPage" id="content-table">
     <child>
       <object class="AdwPreferencesGroup">
@@ -62,7 +62,7 @@
                 </child>
                 <child>
                   <object class="GtkToggleButton" id="zti-3">
-                    <property name="label" translatable="yes"> </property>
+                    <property name="label" translatable="yes"> </property>
                     <property name="receives-default">1</property>
                     <layout>
                       <property name="column">1</property>
@@ -82,7 +82,7 @@
                 </child>
                 <child>
                   <object class="GtkToggleButton" id="zti-5">
-                    <property name="label" translatable="yes"> </property>
+                    <property name="label" translatable="yes"> </property>
                     <property name="receives-default">1</property>
                     <layout>
                       <property name="column">3</property>
