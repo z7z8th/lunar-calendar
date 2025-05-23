@@ -20,3 +20,11 @@
     height: 5.1em !important;
     width: 5.1em !important;
 }
+
+.lunar-message.message {
+    background-color: transparent;
+}
+
+.lunar-message.message .message-header .message-header-content {
+    padding-bottom: 0;
+}

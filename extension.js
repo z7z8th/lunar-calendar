@@ -18,80 +18,78 @@ import LunarDate    from './backend-selector.js'
 const _make_new_with_args = (my_class, args) => new (Function.prototype.bind.apply(
   my_class, [null].concat(Array.prototype.slice.call(args))))()
 
-const LunarCalendarMessage = GObject.registerClass({
-  Signals: {
-    'close': {},
-  },
-}, class LunarCalendarMessage extends St.Button {
+const LunarCalendarMessage = GObject.registerClass(
+class LunarCalendarMessage extends St.Button {
 
   constructor (rlt, rl, bzt, bz, gzt, gz, jrt, jr) {
     super({
-      style_class: 'message events-button',
+      style_class: 'message lunar-message',
       can_focus: true,
       x_expand: true,
       y_expand: false,
     })
 
     const contentBox = new St.BoxLayout({
-      style_class: 'events-box',
+      style_class: 'lunar-message-group message-notification-group',
       vertical: true,
       x_expand: true,
     })
 
-    this._rltLabel = new St.Label({
-      style_class: 'events-title',
+    const _titleLabel = (text) => new St.Label({
+      style_class: 'message-source-title',
       y_align: Clutter.ActorAlign.END,
-      text: rlt,
+      text,
     })
-    contentBox.add_child(this._rltLabel)
 
-    this._rlLabel = new St.Label({
-      style_class: 'events-list',
-      text: rl,
+    const _contentLabel = (text) => new St.Label({
+      style_class: 'message-content',
+      text,
     })
-    contentBox.add_child(this._rlLabel)
 
-    this._bztLabel = new St.Label({
-      style_class: 'events-title',
-      style: 'padding-top:2ex',
-      y_align: Clutter.ActorAlign.END,
-      text: bzt,
+    const _header = (child) => new St.Bin({
+      style_class: 'message-header',
+      child: new St.Bin({
+        style_class: 'message-header-content',
+        child,
+      }),
+      x_align: Clutter.ActorAlign.START,
     })
-    contentBox.add_child(this._bztLabel)
 
-    this._bzLabel = new St.Label({
-      style_class: 'events-list',
-      text: bz,
+    const _box = (child) => new St.Bin({
+      style_class: 'message-box',
+      child,
+      x_align: Clutter.ActorAlign.START,
     })
-    contentBox.add_child(this._bzLabel)
 
-    this._gztLabel = new St.Label({
-      style_class: 'events-title',
-      style: 'padding-top:2ex',
-      y_align: Clutter.ActorAlign.END,
-      text: gzt,
-    })
-    contentBox.add_child(this._gztLabel)
+    const _group = (title, content) => {
+      const box = new St.BoxLayout({
+        vertical: true,
+        x_expand: true,
+      })
+      box.add_child(_header(title))
+      box.add_child(_box(content))
+      return box
+    }
 
-    this._gzLabel = new St.Label({
-      style_class: 'events-list',
-      text: gz,
-    })
-    contentBox.add_child(this._gzLabel)
+    this._rltLabel = _titleLabel(rlt)
+    this._rlLabel = _contentLabel(rl)
+    this._rlGroup = _group(this._rltLabel, this._rlLabel)
+    contentBox.add_child(this._rlGroup)
 
-    this._jrtLabel = new St.Label({
-      style_class: 'events-title',
-      style: 'padding-top:2ex',
-      y_align: Clutter.ActorAlign.END,
-      text: jrt,
-    })
-    contentBox.add_child(this._jrtLabel)
+    this._bztLabel = _titleLabel(bzt)
+    this._bzLabel = _contentLabel(bz)
+    this._bzGroup = _group(this._bztLabel, this._bzLabel)
+    contentBox.add_child(this._bzGroup)
 
-    this._jrLabel = new St.Label({
-      style_class: 'events-list',
-      text: jr,
-    })
-    contentBox.add_child(this._jrLabel)
+    this._gztLabel = _titleLabel(gzt)
+    this._gzLabel = _contentLabel(gz)
+    this._gzGroup = _group(this._gztLabel, this._gzLabel)
+    contentBox.add_child(this._gzGroup)
+
+    this._jrtLabel = _titleLabel(jrt)
+    this._jrLabel = _contentLabel(jr)
+    this._jrGroup = _group(this._jrtLabel, this._jrLabel)
+    contentBox.add_child(this._jrGroup)
 
     this.bzVisible = true
     this.gzVisible = true
@@ -118,50 +116,43 @@ const LunarCalendarMessage = GObject.registerClass({
 
   bzHide () {
     this.bzVisible = false
-    this._bzLabel.hide()
-    this._bztLabel.hide()
+    this._bzGroup.hide()
   }
 
   gzHide () {
     this.gzVisible = false
-    this._gzLabel.hide()
-    this._gztLabel.hide()
+    this._gzGroup.hide()
   }
 
   jrHide () {
     this.jrVisible = false
-    this._jrLabel.hide()
-    this._jrtLabel.hide()
+    this._jrGroup.hide()
   }
 
   bzShow () {
     this.bzVisible = true
-    this._bzLabel.show()
-    this._bztLabel.show()
+    this._bzGroup.show()
   }
 
   gzShow () {
     this.gzVisible = true
-    this._gzLabel.show()
-    this._gztLabel.show()
+    this._gzGroup.show()
   }
 
   jrShow () {
     this.jrVisible = true
-    this._jrLabel.show()
-    this._jrtLabel.show()
+    this._jrGroup.show()
   }
 
-  canClear () { return false }
-
-  canClose () { return false }
 })
 
 const LunarCalendarSection = GObject.registerClass(
-class LunarCalendarSection extends MessageList.MessageListSection {
+class LunarCalendarSection extends St.Bin {
 
-  _init (settings, ld) {
-    super._init('Lunar Calendar')
+  constructor (settings, ld) {
+    super({
+      style_class: 'message-view'
+    })
 
     this._settings = settings
     this._ld = ld
@@ -173,7 +164,7 @@ class LunarCalendarSection extends MessageList.MessageListSection {
       this._tl("节日"), this._ld.get_jieri("\n"))
     this._currentLang = this._ld._lang
 
-    this.addMessage(this._message, false)
+    this.set_child(this._message)
 
     if (!this._settings.get_boolean('ba-zi') || LunarDate.backend != 'ytliu0')
       this._message.bzHide()
@@ -198,9 +189,7 @@ class LunarCalendarSection extends MessageList.MessageListSection {
     return tl(this._ld._lang, str)
   }
 
-  get allowed () { return true }
-
-  _reloadEvents () {
+  _reload () {
     this._reloading = true
 
     const bzv = this._message.bzVisible
@@ -244,23 +233,14 @@ class LunarCalendarSection extends MessageList.MessageListSection {
     }
 
     this._reloading = false
-    this._sync()
   }
 
   setDate (date) {
     this._ld.setDateNoon(date)
     let cny = this._ld.strftime("%(shengxiao)")
-    this._reloadEvents()
+    this._reload()
   }
 
-  _shouldShow () { return true }
-
-  _sync () {
-    if (this._reloading)
-      return
-
-    super._sync()
-  }
 })
 
 const LunarEventSource = GObject.registerClass(
@@ -520,10 +500,8 @@ export default class LunarCalendarExtension extends Extension {
     }
 
     ml._lunarCalendarSection = new LunarCalendarSection(this._settings, this._ld)
-    ml._addSection(ml._lunarCalendarSection)
-    ml._sectionList.set_child_at_index(ml._lunarCalendarSection, 1)
-    ml._lunarCalendarSection._sync()
-    ml._sync()
+    const mlBox = ml._scrollView.get_parent()
+    mlBox.insert_child_at_index(ml._lunarCalendarSection, 0)
 
     const updateDate = () => {
       self._ld.setDate(new Date())
