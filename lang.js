@@ -2,6 +2,7 @@
 const tl = {}
 // 繁體字
 tl[1] = {
+  "农历": "農曆",
   "干支": "幹支",
   "节日": "節日",
   "%(SHI)时": "%(SHI)時",
@@ -9,6 +10,7 @@ tl[1] = {
 
 // en
 tl[0] = {
+  "农历": "Lunar calendar",
   "节日": "Holidays",
   "干支": "Sexagenary cycle",
   "%(SHI)时": "%(SHI) H",
@@ -20,6 +22,7 @@ tl[-1] = {
 
 // de
 tl[-2] = {
+  "农历": "Mondkalender",
   "节日": "Feste",
   "干支": "Stamm und Zweig",
   "%(SHI)时": "%(SHI).S",

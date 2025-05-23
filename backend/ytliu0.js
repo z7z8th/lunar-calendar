@@ -102,15 +102,14 @@ class LunarDateX {
     return ""
   }
 
-  _get_holiday_str (group, key) {
+  _get_holiday_str (group, key, short) {
     const str = this._holidayData.get_locale_string_list(group, key, this._holidayLang)
-    return str[str.length - 1]
+    return str[short ? 0 : str.length - 1]
   }
 
-  // Return the holidays, separated by `sep'
-  get_jieri (sep) {
+  _get_jieri_ls (short) {
     if (!this._calendar)
-      return ""
+      return []
     let jieri = []
     const solterm = this.getSolterm()
     if (solterm !== undefined) {
@@ -122,22 +121,40 @@ class LunarDateX {
     if (this._holidayData.has_group("SOLAR")) {
       const solar = "%02d%02d".format(this.sm, this.sd)
       try {
-        jieri.push(this._get_holiday_str("SOLAR", solar))
+        jieri.push(this._get_holiday_str("SOLAR", solar, short))
       } catch {}
     }
     if (this._holidayData.has_group("LUNAR")) {
       const lunar = "%02d%02d".format(this.cm, this.cd)
       try {
-        jieri.push(this._get_holiday_str("LUNAR", lunar))
+        jieri.push(this._get_holiday_str("LUNAR", lunar, short))
       } catch {}
     }
     if (this._holidayData.has_group("WEEK")) {
       const week = "%02d%01d%01d".format(this.sm, weekth(this.sd), this._solar_date.getDay())
       try {
-        jieri.push(this._get_holiday_str("WEEK", week))
+        jieri.push(this._get_holiday_str("WEEK", week, short))
       } catch {}
     }
-    return jieri.join(sep)
+    return jieri
+  }
+
+  // Return the holidays, separated by `sep'
+  get_jieri (sep) {
+    return this._get_jieri_ls(false).join(sep)
+  }
+
+  get_calendar (i) {
+    if (this.getHoliday() === 1) {
+      const jrs = this._get_jieri_ls(true)
+      if (jrs.length) {
+        return jrs[0]
+      }
+    }
+    if (this.ri === 1) {
+      return this.strftimex("%(YUE)月")
+    }
+    return this.strftimex("%(RI)")
   }
 
   getSolterm () {

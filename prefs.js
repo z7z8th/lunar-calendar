@@ -19,6 +19,7 @@ export default class LunarCalendarPreferences extends ExtensionPreferences {
     win._settings.bind('show-date', ui.get_object('show-date'), 'active', Gio.SettingsBindFlags.DEFAULT)
     win._settings.bind('show-time', ui.get_object('show-time'), 'active', Gio.SettingsBindFlags.DEFAULT)
     win._settings.bind('show-calendar', ui.get_object('show-calendar'), 'active', Gio.SettingsBindFlags.DEFAULT)
+    win._settings.bind('jrrilinei', ui.get_object('jrrilinei'), 'active', Gio.SettingsBindFlags.DEFAULT)
     if (hasBazi)
       win._settings.bind('ba-zi',   ui.get_object('ba-zi'),     'active', Gio.SettingsBindFlags.DEFAULT)
     win._settings.bind('gen-zhi',   ui.get_object('gen-zhi'),   'active', Gio.SettingsBindFlags.DEFAULT)

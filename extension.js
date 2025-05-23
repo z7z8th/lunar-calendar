@@ -24,9 +24,9 @@ const LunarCalendarMessage = GObject.registerClass({
   },
 }, class LunarCalendarMessage extends St.Button {
 
-  constructor (title, body) {
+  constructor (rlt, rl, bzt, bz, gzt, gz, jrt, jr) {
     super({
-      style_class: 'events-button',
+      style_class: 'message events-button',
       can_focus: true,
       x_expand: true,
       y_expand: false,
@@ -38,20 +38,118 @@ const LunarCalendarMessage = GObject.registerClass({
       x_expand: true,
     })
 
-    const titleLabel = new St.Label({
+    this._rltLabel = new St.Label({
       style_class: 'events-title',
       y_align: Clutter.ActorAlign.END,
-      text: title,
+      text: rlt,
     })
-    contentBox.add_child(titleLabel)
+    contentBox.add_child(this._rltLabel)
 
-    const bodyLabel = new St.Label({
+    this._rlLabel = new St.Label({
       style_class: 'events-list',
-      text: body,
+      text: rl,
     })
-    contentBox.add_child(bodyLabel)
+    contentBox.add_child(this._rlLabel)
+
+    this._bztLabel = new St.Label({
+      style_class: 'events-title',
+      style: 'padding-top:2ex',
+      y_align: Clutter.ActorAlign.END,
+      text: bzt,
+    })
+    contentBox.add_child(this._bztLabel)
+
+    this._bzLabel = new St.Label({
+      style_class: 'events-list',
+      text: bz,
+    })
+    contentBox.add_child(this._bzLabel)
+
+    this._gztLabel = new St.Label({
+      style_class: 'events-title',
+      style: 'padding-top:2ex',
+      y_align: Clutter.ActorAlign.END,
+      text: gzt,
+    })
+    contentBox.add_child(this._gztLabel)
+
+    this._gzLabel = new St.Label({
+      style_class: 'events-list',
+      text: gz,
+    })
+    contentBox.add_child(this._gzLabel)
+
+    this._jrtLabel = new St.Label({
+      style_class: 'events-title',
+      style: 'padding-top:2ex',
+      y_align: Clutter.ActorAlign.END,
+      text: jrt,
+    })
+    contentBox.add_child(this._jrtLabel)
+
+    this._jrLabel = new St.Label({
+      style_class: 'events-list',
+      text: jr,
+    })
+    contentBox.add_child(this._jrLabel)
+
+    this.bzVisible = true
+    this.gzVisible = true
+    this.jrVisible = true
 
     this.set_child(contentBox)
+  }
+
+  set rl (rlt) {
+    this._rlLabel.text = rlt
+  }
+
+  set bz (bzt) {
+    this._bzLabel.text = bzt
+  }
+
+  set gz (gzt) {
+    this._gzLabel.text = gzt
+  }
+
+  set jr (jrt) {
+    this._jrLabel.text = jrt
+  }
+
+  bzHide () {
+    this.bzVisible = false
+    this._bzLabel.hide()
+    this._bztLabel.hide()
+  }
+
+  gzHide () {
+    this.gzVisible = false
+    this._gzLabel.hide()
+    this._gztLabel.hide()
+  }
+
+  jrHide () {
+    this.jrVisible = false
+    this._jrLabel.hide()
+    this._jrtLabel.hide()
+  }
+
+  bzShow () {
+    this.bzVisible = true
+    this._bzLabel.show()
+    this._bztLabel.show()
+  }
+
+  gzShow () {
+    this.gzVisible = true
+    this._gzLabel.show()
+    this._gztLabel.show()
+  }
+
+  jrShow () {
+    this.jrVisible = true
+    this._jrLabel.show()
+    this._jrtLabel.show()
   }
 
   canClear () { return false }
@@ -68,11 +166,32 @@ class LunarCalendarSection extends MessageList.MessageListSection {
     this._settings = settings
     this._ld = ld
 
-    this._title = new St.Button({ style_class: 'events-section-title',
-                                  label: '',
-                                  x_align: Clutter.ActorAlign.START,
-                                  can_focus: true })
-    this.insert_child_below(this._title, null)
+    this._message = new LunarCalendarMessage(
+      this._tl("农历"), this._ld.strftimex("%(NIAN)年%(YUE)月%(RI)日"),
+      this._tl("八字"), this._ld.strftime("%(Y8)年%(M8)月%(D8)日"),
+      this._tl("干支"), this._ld.strftime("%(Y60)年%(M60)月%(D60)日"),
+      this._tl("节日"), this._ld.get_jieri("\n"))
+    this._currentLang = this._ld._lang
+
+    this.addMessage(this._message, false)
+
+    if (!this._settings.get_boolean('ba-zi') || LunarDate.backend != 'ytliu0')
+      this._message.bzHide()
+    if (!this._settings.get_boolean('gen-zhi'))
+      this._message.gzHide()
+    const jr = this._settings.get_boolean('jieri') ? this._ld.getHoliday() : ""
+    if (jr == "")
+      this._message.jrHide()
+  }
+
+  updateTl () {
+    if (this._currentLang !== this._ld._lang) {
+      this._currentLang = this._ld._lang
+      this._message._rltLabel.text = this._tl("农历")
+      this._message._bztLabel.text = this._tl("八字")
+      this._message._gztLabel.text = this._tl("干支")
+      this._message._jrtLabel.text = this._tl("节日")
+    }
   }
 
   _tl (str) {
@@ -84,17 +203,45 @@ class LunarCalendarSection extends MessageList.MessageListSection {
   _reloadEvents () {
     this._reloading = true
 
-    this._list.destroy_all_children()
+    const bzv = this._message.bzVisible
+    const gzv = this._message.gzVisible
+    const jrv = this._message.jrVisible
 
-    if (this._settings.get_boolean('ba-zi') && LunarDate.backend != 'ytliu0')
-      this.addMessage(new LunarCalendarMessage(this._tl("八字"), this._ld.strftime("%(Y8)年%(M8)月%(D8)日")), false)
+    this._message.rl = this._ld.strftimex("%(NIAN)年%(YUE)月%(RI)日")
 
-    if (this._settings.get_boolean('gen-zhi'))
-      this.addMessage(new LunarCalendarMessage(this._tl("干支"), this._ld.strftime("%(Y60)年%(M60)月%(D60)日")), false)
+    if (this._settings.get_boolean('ba-zi') && LunarDate.backend != 'ytliu0') {
+      this._message.bz = this._ld.strftime("%(Y8)年%(M8)月%(D8)日")
+      if (!bzv) {
+        this._message.bzShow()
+      }
+    } else if (bzv) {
+      this._message.bzHide()
+    }
+
+    if (this._settings.get_boolean('gen-zhi')) {
+      this._message.gz = this._ld.strftime("%(Y60)年%(M60)月%(D60)日")
+      if (!gzv) {
+        this._message.gzShow()
+      }
+    } else if (gzv) {
+      this._message.gzHide()
+    }
 
     const jr = this._settings.get_boolean('jieri') ? this._ld.getHoliday() : ""
-    if (jr != "")
-      this.addMessage(new LunarCalendarMessage(this._tl("节日"), this._ld.get_jieri("\n")), false)
+    if (jr != "") {
+      const jrs = this._ld.get_jieri("\n").split("\n")
+      const jrs2 = this._settings.get_boolean('jrrilinei') && this._settings.get_boolean('show-calendar') ? jrs.splice(1) : jrs
+      if (jrs2.length) {
+        this._message.jr = jrs2.join("\n")
+        if (!jrv) {
+          this._message.jrShow()
+        }
+      } else if (jrv) {
+        this._message.jrHide()
+      }
+    } else if (jrv) {
+      this._message.jrHide()
+    }
 
     this._reloading = false
     this._sync()
@@ -103,7 +250,6 @@ class LunarCalendarSection extends MessageList.MessageListSection {
   setDate (date) {
     this._ld.setDateNoon(date)
     let cny = this._ld.strftime("%(shengxiao)")
-    this._title.label = this._ld.strftimex("%(NIAN)年%(YUE)月%(RI)日")
     this._reloadEvents()
   }
 
@@ -146,8 +292,17 @@ class LunarEventSource extends EventSourceBase {
 
   hasEvents (day) {
     this._ld.setDateNoon(day)
+    const wr = this._wrapped.hasEvents(day)
     const jr = this._settings.get_boolean('jieri') ? this._ld.getHoliday() : ""
-    return this._wrapped.hasEvents(day) || jr != ""
+    if (jr != "") {
+      const jr1 = this._settings.get_boolean('jrrilinei') && this._settings.get_boolean('show-calendar')
+      if (jr1) {
+        const jrs = this._ld.get_jieri("\n").split("\n")
+        return wr || jrs.length > 1
+      }
+      return true
+    }
+    return wr
   }
 })
 
@@ -179,6 +334,11 @@ export default class LunarCalendarExtension extends Extension {
     this._injectionManager = new InjectionManager()
 
     const self = this
+
+    const dm = Main.panel.statusArea.dateMenu
+
+    const cal = dm._calendar
+    const ml = dm._messageList
 
     this._settings.connect('changed', () => {
       for (let x in self._settingsChanged) {
@@ -223,13 +383,10 @@ export default class LunarCalendarExtension extends Extension {
 
       this._ld.setLang(lang)
       this._ld.setHoliday(holiday)
+      if (ml._lunarCalendarSection)
+        ml._lunarCalendarSection.updateTl()
     }
     this._settingsChanged.switchLang()
-
-    const dm = Main.panel.statusArea.dateMenu
-
-    const cal = dm._calendar
-    const ml = dm._messageList
 
     this._replacementFunc.originalMonthHeader = cal._headerFormat
     let rebuild_in_progress = false
@@ -256,13 +413,18 @@ export default class LunarCalendarExtension extends Extension {
       if (+oargs[0].label == +iter_date.getDate().toString()) {
         iter_date._lunar_iter_found = true
         self._ld.setDateNoon(iter_date)
+
         const yd = self._settings.get_boolean('show-calendar') ? self._ld.strftime("%(ri)") : ""
         const dx = self._settings.get_string('zti-dx')
+        const jrn = self._settings.get_boolean('jrrilinei')
+        const cal = jrn ? self._ld.get_calendar(3) : self._ld.strftimex(yd == "1" ? "%(YUE)月" : "%(RI)")
+        const dxs = dx != "none" ? ` size='${dx}'` : ''
+
         let l = oargs[0].label
-        if (yd != "") l += "\n<small>" +
-          self._ld.strftimex(yd == "1" ? "%(YUE)月" : "%(RI)") +
-          "</small>"
-        if (dx != "none") l = `<span size='${dx}'>${l}</span>`
+        if (yd != "")
+          l += `\n${cal}`
+        l = `<span${dxs}>${l}</span>`
+
         oargs[0].label = l
       }
       let new_button = _make_new_with_args(orig_button, oargs)
@@ -305,6 +467,13 @@ export default class LunarCalendarExtension extends Extension {
           return lunarButton(orig_button, iter_date, arguments)
         }
 
+        let tempInjectionManager = new InjectionManager()
+        tempInjectionManager.overrideMethod(
+          cal.layout_manager, 'attach', originalMethod => function (child, left, top, width, height) {
+            originalMethod.apply(this, [child, left, top, width, height])
+          }
+        )
+
         const orig_source = this._eventSource
         if (!(orig_source instanceof LunarEventSource))
           this._eventSource = new LunarEventSource(self._settings, self._ld, orig_source)
@@ -314,6 +483,8 @@ export default class LunarCalendarExtension extends Extension {
         this._eventSource = orig_source
         St.Button = orig_button
         Date = orig_date
+        tempInjectionManager.clear()
+
         let cal_style_class = cal.style_class.split(' ')
             .filter(e => e.length && e != 'lunar-calendar' && !e.startsWith('lunar-calendar-'))
         if (self._settings.get_boolean('show-calendar')) {
@@ -350,7 +521,7 @@ export default class LunarCalendarExtension extends Extension {
 
     ml._lunarCalendarSection = new LunarCalendarSection(this._settings, this._ld)
     ml._addSection(ml._lunarCalendarSection)
-    ml._sectionList.set_child_at_index(ml._lunarCalendarSection, 3)
+    ml._sectionList.set_child_at_index(ml._lunarCalendarSection, 1)
     ml._lunarCalendarSection._sync()
     ml._sync()
 

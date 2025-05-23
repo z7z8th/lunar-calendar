@@ -25,6 +25,12 @@
           </object>
         </child>
         <child>
+          <object class="AdwSwitchRow" id="jrrilinei">
+            <property name="title" translatable="yes">将日期改为节日</property>
+            <property name="margin-start">18</property>
+          </object>
+        </child>
+        <child>
           <object class="AdwSwitchRow" id="gen-zhi">
             <property name="title" translatable="yes">干支</property>
           </object>
@@ -32,6 +38,7 @@
         <child>
           <object class="AdwSwitchRow" id="ba-zi">
             <property name="title" translatable="yes">八字</property>
+            <property name="visible">False</property>
           </object>
         </child>
         <child>

@@ -35,5 +35,8 @@
     <key name="yuyan" type="i">
       <default>3</default>
     </key>
+    <key name="jrrilinei" type="b">
+      <default>false</default>
+    </key>
   </schema>
 </schemalist>
