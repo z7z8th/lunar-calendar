@@ -6,20 +6,45 @@
     width: 14em;
 }
 
+.lunar-calendar-x-small .calendar-weekday, .lunar-calendar-x-small .calendar-weekend {
+    height: 3.7em;
+    width: 3.7em;
+}
+
+.lunar-calendar-small .calendar-weekday, .lunar-calendar-small .calendar-weekend {
+    height: 3.4em;
+    width: 3.4em;
+}
+
 .lunar-calendar-none .calendar-weekday, .lunar-calendar-none .calendar-weekend {
-    height: 3.8em !important;
-    width: 3.8em !important;
+    height: 3.4em;
+    width: 3.4em;
 }
 
 .lunar-calendar-large .calendar-weekday, .lunar-calendar-large .calendar-weekend {
-    height: 4.5em !important;
-    width: 4.5em !important;
+    height: 3.4em;
+    width: 3.4em;
 }
 
 .lunar-calendar-x-large .calendar-weekday, .lunar-calendar-x-large .calendar-weekend {
-    height: 5.1em !important;
-    width: 5.1em !important;
+    height: 3.4em;
+    width: 3.4em;
 }
+
+.lunar-calendar .lunar-day {
+    background-color: transparent !important;
+}
+
+.lunar-calendar-x-small .calendar-day { font-size: 0.66em; }
+.lunar-calendar-x-small .calendar-day.lunar-day { font-size: 0.56em; }
+.lunar-calendar-small .calendar-day { font-size: 0.73em; }
+.lunar-calendar-small .calendar-day.lunar-day { font-size: 0.62em; }
+.lunar-calendar-none .calendar-day { }
+.lunar-calendar-none .calendar-day.lunar-day { font-size: 0.7em; }
+.lunar-calendar-large .calendar-day { font-size: 1em; }
+.lunar-calendar-large .calendar-day.lunar-day { font-size: 0.85em; }
+.lunar-calendar-x-large .calendar-day { font-size: 1.1em; }
+.lunar-calendar-x-large .calendar-day.lunar-day { font-size: 0.93em; }
 
 .lunar-message.message {
     background-color: transparent;

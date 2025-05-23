@@ -390,25 +390,25 @@ export default class LunarCalendarExtension extends Extension {
     this._settingsChanged.refreshClock()
 
     const lunarButton = (orig_button, iter_date, oargs) => {
+      let new_button
       if (+oargs[0].label == +iter_date.getDate().toString()) {
         iter_date._lunar_iter_found = true
         self._ld.setDateNoon(iter_date)
 
         const yd = self._settings.get_boolean('show-calendar') ? self._ld.strftime("%(ri)") : ""
-        const dx = self._settings.get_string('zti-dx')
         const jrn = self._settings.get_boolean('jrrilinei')
         const cal = jrn ? self._ld.get_calendar(3) : self._ld.strftimex(yd == "1" ? "%(YUE)月" : "%(RI)")
-        const dxs = dx != "none" ? ` size='${dx}'` : ''
 
-        let l = oargs[0].label
         if (yd != "")
-          l += `\n${cal}`
-        l = `<span${dxs}>${l}</span>`
+          oargs[0].label += `\n`
 
-        oargs[0].label = l
+        new_button = _make_new_with_args(orig_button, oargs)
+
+        if (yd != "")
+          new_button._lunar = cal
+      } else {
+        new_button = _make_new_with_args(orig_button, oargs)
       }
-      let new_button = _make_new_with_args(orig_button, oargs)
-      new_button.child.use_markup = true
 
       return new_button
     }
@@ -451,6 +451,15 @@ export default class LunarCalendarExtension extends Extension {
         tempInjectionManager.overrideMethod(
           cal.layout_manager, 'attach', originalMethod => function (child, left, top, width, height) {
             originalMethod.apply(this, [child, left, top, width, height])
+            if (child._lunar) {
+              let lb = new St.Label({
+                text: `\n${child._lunar}`,
+                style_class: `calendar-day lunar-day`,
+              })
+              lb.clutter_text.x_align = Clutter.ActorAlign.CENTER
+              lb.clutter_text.y_align = Clutter.ActorAlign.CENTER
+              originalMethod.apply(this, [lb, left, top, width, height])
+            }
           }
         )
 
